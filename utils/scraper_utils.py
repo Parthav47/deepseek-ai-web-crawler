@@ -37,19 +37,51 @@ def get_llm_strategy() -> LLMExtractionStrategy:
         LLMExtractionStrategy: The settings for how to extract data using LLM.
     """
     # https://docs.crawl4ai.com/api/strategies/#llmextractionstrategy
+    
     return LLMExtractionStrategy(
         provider="groq/deepseek-r1-distill-llama-70b",  # Name of the LLM provider
         api_token=os.getenv("GROQ_API_KEY"),  # API token for authentication
         schema=Venue.model_json_schema(),  # JSON schema of the data model
         extraction_type="schema",  # Type of extraction to perform
         instruction=(
-            "Extract all venue objects with 'name', 'location', 'price', 'capacity', "
+            "Extract all venue objects with 'name', 'price' "
             "'rating', 'reviews', and a 1 sentence description of the venue from the "
             "following content."
         ),  # Instructions for the LLM
         input_format="markdown",  # Format of the input content
         verbose=True,  # Enable verbose logging
     )
+
+
+    # Construct LLM prompt
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are an expert web scraping assistant. "
+                "Extract structured venue data in JSON format."
+            )
+        },
+        {
+            "role": "user",
+            "content": (
+                "**Task:** Extract all venue objects with the following fields:\n"
+                "- name\n- price\n- rating\n- reviews\n"
+                "- a 1-sentence description\n\n"
+                "**Content:**\n\n" + html_content
+            )
+        }
+    ]
+
+    # Run the model
+    response = client.chat.completions.create(
+        model="groq/deepseek-r1-distill-llama-70b",
+        messages=messages,
+        stream=False
+    )
+
+    return response.choices[0].message.content
+
 
 
 async def check_no_results(
@@ -78,7 +110,7 @@ async def check_no_results(
     )
 
     if result.success:
-        if "No Results Found" in result.cleaned_html:
+        if result.cleaned_html and "No Results Found" in result.cleaned_html:
             return True
     else:
         print(

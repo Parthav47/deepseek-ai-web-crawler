@@ -13,7 +13,7 @@ from utils.scraper_utils import (
     get_llm_strategy,
 )
 
-load_dotenv()
+load_dotenv('.env.demoapi')
 
 
 async def crawl_venues():
@@ -63,8 +63,10 @@ async def crawl_venues():
 
     # Save the collected venues to a CSV file
     if all_venues:
-        save_venues_to_csv(all_venues, "complete_venues.csv")
-        print(f"Saved {len(all_venues)} venues to 'complete_venues.csv'.")
+        #save_venues_to_csv(all_venues, "complete_venues.csv")
+        #print(f"Saved {len(all_venues)} venues to 'complete_venues.csv'.")
+        save_venues_to_csv(all_venues, "demo_venues.csv")
+        print(f"Saved {len(all_venues)} venues to 'demo_venues.csv'.")
     else:
         print("No venues were found during the crawl.")
 
