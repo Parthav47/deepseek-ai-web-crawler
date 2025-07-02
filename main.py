@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from config import BASE_URL, CSS_SELECTOR, REQUIRED_KEYS
 from utils.data_utils import (
     save_venues_to_csv,
+    generate_csv_filename,
 )
 from utils.scraper_utils import (
     fetch_and_process_page,
@@ -61,17 +62,20 @@ async def crawl_venues():
             # Pause between requests to be polite and avoid rate limits
             await asyncio.sleep(2)  # Adjust sleep time as needed
 
+
+    # Generate dynamic CSV filename based on website name
+    csv_filename = generate_csv_filename(BASE_URL)
+    
     # Save the collected venues to a CSV file
     if all_venues:
-        #save_venues_to_csv(all_venues, "complete_venues.csv")
-        #print(f"Saved {len(all_venues)} venues to 'complete_venues.csv'.")
-        save_venues_to_csv(all_venues, "demo_venues.csv")
-        print(f"Saved {len(all_venues)} venues to 'demo_venues.csv'.")
+        save_venues_to_csv(all_venues, csv_filename)
+        print(f"Saved {len(all_venues)} venues to '{csv_filename}'.")
     else:
         print("No venues were found during the crawl.")
 
     # Display usage statistics for the LLM strategy
-    llm_strategy.show_usage()
+    if llm_strategy:
+        llm_strategy.show_usage()
 
 
 async def main():
